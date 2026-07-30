@@ -1,58 +1,73 @@
-# `overeasy`: FUSE for Time Travel
+# Overeasy - branching filesystem for agents and RL
 
-`overeasy` is a FUSE filesystem with overlay semantics implemented in Rust.
+Overeasy is a filesystem state manager for coding agents and RL rollouts. It uses an [append-only log](https://s2.dev) on [S3](https://aws.amazon.com/s3/) for durability, allowing you to pause-resume an agent/RL filesystem state across hosts, revert to previous states, and cheaply branch into parallel states.
 
-The FUSE filesystem is mounted over a directory whose base state is the directory itself. Every mutation is captured as a delta in the *upper* layer via copy-on-write (COW): on first write, a lower file is promoted to upper, and all subsequent reads serve the upper copy.
+The filesystem is served as a [FUSE](https://www.kernel.org/doc/html/next/filesystems/fuse.html) mount overlay over a base directory. Changes are copy-on-write, isolating mutations from your agent/rollout under a `Session` ID. Sessions can be paused, resumed, branched, and reverted to any prior state using the Overeasy CLI.
 
-`overeasy` intercepts the VFS operations (`lookup`, `getattr`, `read`, `write`, `create`, `unlink`, `rename`, `mkdir`, etc.) of the mount. Each hook further emits a structured mutation record to an append-only log.
+## Quickstart
+[See here for a working example](modal_quickstart.md) of Overeasy running as the filesystem durability layer in a Modal Sandbox environment.
 
-Ultimately, we aim to use `overeasy` as the underlying technology for time travel over sandbox state.
 
 ## Installation
-
-Download the latest `overeasy` binary for your platform from the
-[Releases page](https://github.com/modal-labs/overeasy/releases).
-
 ```bash
-tar -xzf overeasy-<version>-<arch>-unknown-linux-gnu.tar.gz
-sudo install -m 0755 overeasy /usr/local/bin/
+curl -sSL https://raw.githubusercontent.com/modal-labs/overeasy/main/install.sh | bash
+```
+This will install the `overeasy` CLI (aliased to `oe`) into your machine.
+
+### Environment Setup
+Overeasy uses S3 and S2 keys as dependencies. These keys will be provided to you by the Modal team (ask for Erik D or Raymond).
+
+## Example Usage:
+### Create a new session
+```bash
+oe session new 
+# -> <new_session_id>
+```
+Create a new session relative to the current directory.
+
+> [!NOTE] Each session is a diff relative to a stable "lower" directory, so the session becomes invalid if the lower directory changes outside of a session mount. The lower may be specified using `--lower`, defaulting to the current working directory.
+
+### Serve a session as a mounted overlay
+```bash
+oe mount <session_id>
 ```
 
-## Setup
+Mount over the current directory and [serve](https://www.kernel.org/doc/html/next/filesystems/fuse.html) the state for <session_id>.
 
-Install s2-lite server
+For a newly created session, the mounted view will show the unmodified lower directory. Modifications to the file contents while the server is running will be isolated to the session.
+
+To unmount, `ctrl+c`. This will make the current directory return to its unmodified state.
+
+> [!IMPORTANT] A session should only ever be served by one host at a time.
+
+### Resume a session
 ```bash
-curl -fsSL https://raw.githubusercontent.com/s2-streamstore/s2/main/install.sh | bash
+oe mount <session_id>
 ```
+Mounting over the current directory with a session ID will resume from the latest state.
 
-Ensure it's in your PATH
+
+### List sessions
 ```bash
-which s2
+oe session ls
 ```
+List sessions known to this host. Sessions started on other hosts may not be listed, but will be discovered when used in a mount.
 
-Start the server
+### Branch from the current state
 ```bash
-s2 lite --port 8080
+oe session branch <session_id>
+# -> <new_session_id>
 ```
+Branch from the tail of the specified session, creating a new session ID. 
 
-Overeasy will default look for a localhost s2 lite.
-To instead point to managed s2, set `S2_ACCESS_TOKEN`.
+The original session remains valid, and may be resumed from. 
 
-## Running
 
-Mount `lower/` as the overlay (lower = existing contents of `lower/`, upper and log stream will go into `./.lower.overeasy`):
-
-run in default session
+### Revert to a previous state
 ```bash
-overeasy run
+oe session branch <session_id> --to <timestamp>
+# -> <new_session_id>
 ```
+Revert back to a previous state of the specified session using the `--to` flag in a `branch` commmand.
 
-list sessions
-```bash
-overeasy session ls
-```
-
-branch a session at timestamp
-```bash
-overeasy session branch --base <session_id> --to <timestamp>
-```
+Session logs are append-only, so reverts really are just new branches starting from a previous state. The original session remains valid.
