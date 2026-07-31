@@ -1,11 +1,11 @@
-# Overeasy - branching filesystem for agents and RL
+# 🍳 Overeasy - branching filesystem for agents and RL
 
 Overeasy is a filesystem state manager for coding agents and RL rollouts. It uses an [append-only log](https://s2.dev) on [S3](https://aws.amazon.com/s3/) for durability, allowing you to pause-resume an agent/RL filesystem state across hosts, revert to previous states, and cheaply branch into parallel states.
 
 The filesystem is served as a [FUSE](https://www.kernel.org/doc/html/next/filesystems/fuse.html) mount overlay over a base directory. Changes are copy-on-write, isolating mutations from your agent/rollout under a `Session` ID. Sessions can be paused, resumed, branched, and reverted to any prior state using the Overeasy CLI.
 
 ## Quickstart
-[See here for a working example](modal_quickstart.md) of Overeasy running as the filesystem durability layer in a Modal Sandbox environment.
+[See here for a working example](example/README.md) of Overeasy running as the filesystem durability layer in a Modal Sandbox environment.
 
 
 ## Installation
