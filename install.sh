@@ -17,9 +17,8 @@ else
 fi
 
 echo "Downloading overeasy..."
-TAG=$(curl -fsSLI -o /dev/null -w '%{url_effective}' "https://github.com/$REPO/releases/latest" | sed 's|.*/tag/||')
 mkdir -p "$INSTALL_DIR"
-curl -fsSL "https://github.com/$REPO/releases/download/$TAG/overeasy-$TAG-$TARGET.tar.gz" | tar -xz -C "$INSTALL_DIR" overeasy
+curl -fsSL -o "$INSTALL_DIR/overeasy" "https://github.com/$REPO/releases/latest/download/overeasy-$TARGET"
 chmod +x "$INSTALL_DIR/overeasy"
 echo -e "\tInstalled to $INSTALL_DIR/overeasy"
 
