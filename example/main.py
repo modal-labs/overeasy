@@ -37,6 +37,7 @@ sb = modal.Sandbox.create(
     image=image,
     experimental_options={"vm_runtime": True},
     timeout=30,
+    region="us-east",
     env={var: os.environ.get(var) for var in env_vars}
 )
 
@@ -79,8 +80,8 @@ print("Reading marker.txt")
 p = sb.exec("bash", "-c", "cat marker.txt")
 print("->", p.stdout.read())
 
-# Events async upload, taking ~500ms to become durable
-# While not required, we can ensure durability with `oe checkpoint`
+# Events async upload, taking ~500ms to become durable depending on sandbox->s3 latency
+# While not required, we can call `oe checkpoint` to await for all prior writes to become durable
 print("Synced to timestamp:", sb.exec("bash", "-c", "oe checkpoint").stdout.read().strip())
 
 print("Terminating sandbox")
@@ -92,6 +93,7 @@ sb = modal.Sandbox.create(
     image=image,
     experimental_options={"vm_runtime": True},
     timeout=30,
+    region="us-east",
     env={var: os.environ.get(var) for var in env_vars}
 )
 

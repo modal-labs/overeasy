@@ -5,8 +5,9 @@ Overeasy is a filesystem state manager for coding agents and RL rollouts. It use
 The filesystem is served as a [FUSE](https://www.kernel.org/doc/html/next/filesystems/fuse.html) mount overlay over a base directory. Changes are copy-on-write, isolating mutations from your agent/rollout under a `Session` ID. Sessions can be paused, resumed, branched, and reverted to any prior state using the Overeasy CLI.
 
 ## Quickstart
-[See here for a working example](example/README.md) of Overeasy running as the filesystem durability layer in a Modal Sandbox environment.
+The intended way to use Overeasy is in Modal Sandboxes (though it'd work on any Linux machine!)
 
+[See here for a working example](example/README.md) of Overeasy running as the filesystem durability layer in a Modal Sandbox environment.
 
 ## Installation
 ```bash

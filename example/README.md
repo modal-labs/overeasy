@@ -10,7 +10,7 @@ The following environment variables are required:
 - `OVEREASY_BLOB_BUCKET`
 - `S2_ACCESS_TOKEN`
 
-For the fastest experience, we will be providing credentials to our own resources, please contact us for those values.
+For the fastest experience, we will be providing credentials to our own colocated resources, please contact us for those values.
 
 You are also free to self host on your own credentials, acquired via [S2.dev](https://s2.dev) and [AWS S3](https://aws.amazon.com/s3/).
 
