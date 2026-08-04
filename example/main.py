@@ -78,55 +78,9 @@ if __name__ == "__main__":
     print("Terminating sandbox")
     terminate_sandbox(sb)
 
-    print("Resum")
+    print("Resuming session in new sandbox")
+    sb = create_sandbox()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-t0 = time.time()
-t1 = time.time()
-print(f"Initial write took {(t1 - t0)*1000:.3f}ms")
-
-print("Reading marker.txt")
-p = sb.exec("bash", "-c", "cat marker.txt")
-print("->", p.stdout.read())
-
-# Events async upload, taking ~500ms to become durable depending on sandbox->s3 latency
-# While not required, we can call `oe checkpoint` to await for all prior writes to become durable
-
-t0 = time.time()
-print("Synced to timestamp:", sb.exec("bash", "-c", "oe checkpoint").stdout.read().strip())
-t1 = time.time()
-print(f"Checkpoint took {(t1 - t0)*1000:.3f}ms")
-
-print("Terminating sandbox")
-sb.terminate()
-
-print("Resuming session in new sandbox")
-sb = modal.Sandbox.create(
-    app=app,
-    image=image,
-    experimental_options={"vm_runtime": True},
-    timeout=30,
-    region="us-east",
-    env={var: os.environ.get(var) for var in env_vars}
-)
-
-start_session(sb, session_id)
-print(f"Session ID: {session_id}")
-
-print("Reading marker.txt")
-p = sb.exec("bash", "-c", "cat marker.txt")
-print("->", p.stdout.read())
+    print("Reading marker.txt")
+    p = sb.exec("bash", "-c", "cat marker.txt")
+    print("->", p.stdout.read())
