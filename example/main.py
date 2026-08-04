@@ -1,7 +1,6 @@
-from re import M
-
 import modal
 import os
+import time
 
 MOUNTPOINT = "/app"
 
@@ -32,49 +31,73 @@ with modal.enable_output():
         .workdir(MOUNTPOINT)
     ).build(app)
 
-sb = modal.Sandbox.create(
-    app=app,
-    image=image,
-    experimental_options={"vm_runtime": True},
-    timeout=30,
-    region="us-east",
-    env={var: os.environ.get(var) for var in env_vars}
-)
 
-# Helper function for mounting an overeasy session
-def start_session(sb: modal.Sandbox, session_id: str | None = None) -> str:
-    """Starts an overeasy session with the given session ID, or creates a new one if none is provided. Returns the session ID."""
+# Created on first mount
+session_id: str | None = None
 
+def create_sandbox() -> modal.Sandbox:
+    global session_id
+
+    cmd = ["oe", "mount"]
+    if session_id is not None:
+        cmd.append(session_id)
+
+    ready_probe = modal.Probe.with_exec("oe", "status", interval_ms=50)
+    sb = modal.Sandbox.create(
+        *cmd,
+        app=app,
+        image=image,
+        experimental_options={"vm_runtime": True},
+        timeout=30,
+        region="us-east",
+        env={var: os.environ.get(var) for var in env_vars},
+        readiness_probe=ready_probe,
+    )
+
+    sb.wait_until_ready()
     if session_id is None:
-        # Create a new session ID
-        p = sb.exec("bash", "-c", "oe session new")
-        session_id = p.stdout.read().strip()
+        # Mount cmd stdouts the session ID
+        session_id = sb.stdout.read().strip()
 
-    # Mount the session
-    log = "/tmp/oe.log"
-    pidfile = "/tmp/oe.pid"
-    p = sb.exec("bash", "-c", f"echo $$ > {pidfile}; exec oe mount {session_id} > {log} 2>&1")
+    return sb
 
-    # Wait until the mountpoint is ready
-    poll_ready_cmd = f"""
-    until mountpoint -q {MOUNTPOINT}; do
-        pid=$(cat {pidfile} 2>/dev/null)
-        if [ -n "$pid" ] && ! kill -0 "$pid" 2>/dev/null; then
-            echo "process exited before mountpoint was ready"
-            exit 1
-        fi
-        sleep 0.1
-    done
-    """
-    sb.exec("bash", "-c", poll_ready_cmd).wait()
+def terminate_sandbox(sb: modal.Sandbox):
+    # Overeasy events eagerly upload, taking ~150ms to become durable depending on sandbox->s3 latency
+    # While not required, we can call `oe checkpoint` to await for all prior writes to become durable
+    sb.exec("oe", "checkpoint").wait()
 
-    return session_id
+    sb.terminate()
 
-session_id = start_session(sb)
-print(f"Session ID: {session_id}")
+if __name__ == "__main__":
+    sb = create_sandbox()
+    print(f"Session ID: {session_id}")
 
-print("Writing marker.txt")
-sb.exec("bash", "-c", "echo 'hello world' > marker.txt").wait()
+    print("Writing marker.txt")
+    sb.exec("bash", "-c", "echo 'hello world' > marker.txt").wait()
+
+    print("Terminating sandbox")
+    terminate_sandbox(sb)
+
+    print("Resum")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+t0 = time.time()
+t1 = time.time()
+print(f"Initial write took {(t1 - t0)*1000:.3f}ms")
 
 print("Reading marker.txt")
 p = sb.exec("bash", "-c", "cat marker.txt")
@@ -82,7 +105,11 @@ print("->", p.stdout.read())
 
 # Events async upload, taking ~500ms to become durable depending on sandbox->s3 latency
 # While not required, we can call `oe checkpoint` to await for all prior writes to become durable
+
+t0 = time.time()
 print("Synced to timestamp:", sb.exec("bash", "-c", "oe checkpoint").stdout.read().strip())
+t1 = time.time()
+print(f"Checkpoint took {(t1 - t0)*1000:.3f}ms")
 
 print("Terminating sandbox")
 sb.terminate()
