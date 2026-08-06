@@ -41,8 +41,10 @@ def create_sandbox() -> modal.Sandbox:
     cmd = ["oe", "mount"]
     if session_id is not None:
         cmd.append(session_id)
+    cmd = ["bash","-c", (" ".join(cmd) + " && sleep infinity")]
 
-    ready_probe = modal.Probe.with_exec("oe", "status", interval_ms=50)
+    ready_probe = modal.Probe.with_exec("sh", "-c", 'oe status', interval_ms=50)
+
     sb = modal.Sandbox.create(
         *cmd,
         app=app,
@@ -57,7 +59,9 @@ def create_sandbox() -> modal.Sandbox:
     sb.wait_until_ready()
     if session_id is None:
         # Mount cmd stdouts the session ID
-        session_id = sb.stdout.read().strip()
+        for line in sb.stdout:
+            session_id = line.strip()
+            break
 
     return sb
 
@@ -69,6 +73,7 @@ def terminate_sandbox(sb: modal.Sandbox):
     sb.terminate()
 
 if __name__ == "__main__":
+    print("Creating sandbox with new session")
     sb = create_sandbox()
     print(f"Session ID: {session_id}")
 
