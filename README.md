@@ -16,7 +16,9 @@ curl -sSL https://raw.githubusercontent.com/modal-labs/overeasy/main/install.sh 
 This will install the `overeasy` CLI (aliased to `oe`) into your machine.
 
 ### Environment Setup
-Overeasy uses S3 and S2 keys as dependencies. These keys will be provided to you by the Modal team (ask for Erik D or Raymond).
+Overeasy uses S3 and S2 keys as dependencies. For the fastest experience, we will be providing credentials to our own colocated resources, please contact us for those values.
+
+You are also free to self host on your own credentials, acquired via S2.dev and AWS S3.
 
 ## Example Usage:
 ### Create a new session
