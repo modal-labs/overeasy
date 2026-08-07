@@ -28,7 +28,7 @@ uv run main.py
 - terminate that sandbox, boot a new one, and mount to the same session
   - and see the same durable content
 
-For a more interractive experience, the `PersistentSandbox` implementation uses overeasy and sandboxes with an intentionally short timeout to allow you to interract with the filesystem seamlessly across constant reboots.
+For a more interractive experience, the [persistent_sandbox](persistent_sandbox.py) implementation uses overeasy and sandboxes with an intentionally short timeout to allow you to interract with the filesystem seamlessly across constant reboots.
 ```bash
 uv run persistent_sandbox.py
 ```
