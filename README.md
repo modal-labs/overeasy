@@ -22,7 +22,7 @@ This will install the `overeasy` CLI (aliased to `oe`) into your machine.
 ### Environment Setup
 Overeasy uses S3 and S2 keys as dependencies. For the fastest experience, we will be providing credentials to our own colocated resources, please [contact us](mailto:erikd@modal.com) for those values.
 
-You are also free to self host on your own credentials, acquired via S2.dev and AWS S3.
+You are also free to self host on your own credentials, acquired via [S2.dev](https://s2.dev) and [AWS S3](https://aws.amazon.com/s3/).
 
 ## Example Usage:
 ### Create a new session
