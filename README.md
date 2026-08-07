@@ -4,7 +4,9 @@ Overeasy is a filesystem state manager for coding agents and RL rollouts. It use
 
 The filesystem is served as a [FUSE](https://www.kernel.org/doc/html/next/filesystems/fuse.html) mount overlay over a base directory. Changes are copy-on-write, isolating mutations from your agent/rollout under a `Session` ID. Sessions can be paused, resumed, branched, and reverted to any prior state using the Overeasy CLI.
 
-> 😇 Overeasy is experimental - API stability is not guaranteed. For any feedback, or if you're planning to use this in production, we'd love to [chat first](mailto:erikd@modal.com).
+> 😇 Overeasy is experimental and its interface is subject to change.
+> 
+> For any feedback, or if you're planning to use this in production, we'd love to [chat first](mailto:erikd@modal.com).
 
 ## Quickstart
 The intended way to use Overeasy is in [Modal Sandboxes](https://modal.com/docs/guide/sandboxes#sandboxes), though it'd work on any Linux machine /dev/fuse available!
