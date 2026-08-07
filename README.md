@@ -28,7 +28,7 @@ oe session new
 ```
 Create a new session relative to the current directory.
 
-> [!NOTE] Each session is a diff relative to a stable "lower" directory, so the session becomes invalid if the lower directory changes outside of a session mount. The lower may be specified using `--lower`, defaulting to the current working directory.
+> Each session is a diff relative to a stable "lower" directory, so the session becomes invalid if the lower directory changes outside of a session mount. The lower may be specified using `--lower`, defaulting to the current working directory.
 
 ### Serve a session as a mounted overlay
 ```bash
@@ -41,7 +41,7 @@ For a newly created session, the mounted view will show the unmodified lower dir
 
 To unmount, `ctrl+c`. This will make the current directory return to its unmodified state.
 
-> [!IMPORTANT] A session should only ever be served by one host at a time.
+> Important: A session should only ever be served by one host at a time.
 
 ### Resume a session
 ```bash
