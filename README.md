@@ -5,7 +5,7 @@ Overeasy is a filesystem state manager for coding agents and RL rollouts. It use
 The filesystem is served as a [FUSE](https://www.kernel.org/doc/html/next/filesystems/fuse.html) mount overlay over a base directory. Changes are copy-on-write, isolating mutations from your agent/rollout under a `Session` ID. Sessions can be paused, resumed, branched, and reverted to any prior state using the Overeasy CLI.
 
 ## Quickstart
-The intended way to use Overeasy is in Modal Sandboxes (though it'd work on any Linux machine!)
+The intended way to use Overeasy is in [Modal Sandboxes](https://modal.com/docs/guide/sandboxes#sandboxes), though it'd work on any Linux machine /dev/fuse available!
 
 [See here for a working example](example/README.md) of Overeasy running as the filesystem durability layer in a Modal Sandbox environment.
 
@@ -39,16 +39,20 @@ Mount over the current directory and [serve](https://www.kernel.org/doc/html/nex
 
 For a newly created session, the mounted view will show the unmodified lower directory. Modifications to the file contents while the server is running will be isolated to the session.
 
-To unmount, `ctrl+c`. This will make the current directory return to its unmodified state.
+To unmount:
+```bash
+oe unmount
+```
+This will make the current directory return to its unmodified state.
 
 > Important: A session should only ever be served by one host at a time.
 
 ### Resume a session
 ```bash
 oe mount <session_id>
+# -> <session_id>
 ```
 Mounting over the current directory with a session ID will resume from the latest state.
-
 
 ### List sessions
 ```bash
@@ -74,3 +78,12 @@ oe session branch <session_id> --to <timestamp>
 Revert back to a previous state of the specified session using the `--to` flag in a `branch` commmand.
 
 Session logs are append-only, so reverts really are just new branches starting from a previous state. The original session remains valid.
+
+### Ensure durability
+```bash
+oe checkpoint
+# -> timestamp
+```
+Block until all outstanding writes have been acked durable on S3, returning the timestamp of the tail of the durable stream.
+
+This operation is equivalent to `fsync` to the durable tier. This is not required, as writes eagerly push to durable, but is useful for producing a timestamp to use in a `session branch --to <timestamp>`.
