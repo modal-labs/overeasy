@@ -4,6 +4,8 @@ Overeasy is a filesystem state manager for coding agents and RL rollouts. It use
 
 The filesystem is served as a [FUSE](https://www.kernel.org/doc/html/next/filesystems/fuse.html) mount overlay over a base directory. Changes are copy-on-write, isolating mutations from your agent/rollout under a `Session` ID. Sessions can be paused, resumed, branched, and reverted to any prior state using the Overeasy CLI.
 
+> ❗Overeasy is experimental, we strongly recommend [chatting with us](mailto:erikd@modal.com) before using it in production.
+
 ## Quickstart
 The intended way to use Overeasy is in [Modal Sandboxes](https://modal.com/docs/guide/sandboxes#sandboxes), though it'd work on any Linux machine /dev/fuse available!
 
@@ -16,7 +18,7 @@ curl -sSL https://raw.githubusercontent.com/modal-labs/overeasy/main/install.sh 
 This will install the `overeasy` CLI (aliased to `oe`) into your machine.
 
 ### Environment Setup
-Overeasy uses S3 and S2 keys as dependencies. For the fastest experience, we will be providing credentials to our own colocated resources, please contact us for those values.
+Overeasy uses S3 and S2 keys as dependencies. For the fastest experience, we will be providing credentials to our own colocated resources, please [contact us](mailto:erikd@modal.com) for those values.
 
 You are also free to self host on your own credentials, acquired via S2.dev and AWS S3.
 
